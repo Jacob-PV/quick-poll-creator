@@ -43,11 +43,11 @@ export async function POST(request: NextRequest) {
     // Store in Redis with 30 day TTL
     const pollKey = `poll:${pollId}`;
     await redis.hset(pollKey, {
-      id: poll.id,
-      question: poll.question,
+      id: String(poll.id),
+      question: String(poll.question),
       options: JSON.stringify(poll.options),
       votes: JSON.stringify(poll.votes),
-      createdAt: poll.createdAt
+      createdAt: String(poll.createdAt)
     });
 
     // Set expiration (30 days in seconds)
