@@ -21,12 +21,20 @@ export async function GET(
       );
     }
 
-    // Parse poll data
+    // Parse poll data - handle both string and already-parsed data
     const poll: Poll = {
       id: pollData.id as string,
       question: pollData.question as string,
-      options: JSON.parse(pollData.options as string),
-      votes: JSON.parse(pollData.votes as string),
+      options: typeof pollData.options === 'string'
+        ? JSON.parse(pollData.options)
+        : Array.isArray(pollData.options)
+          ? pollData.options
+          : [],
+      votes: typeof pollData.votes === 'string'
+        ? JSON.parse(pollData.votes)
+        : Array.isArray(pollData.votes)
+          ? pollData.votes
+          : [],
       createdAt: pollData.createdAt as string
     };
 
