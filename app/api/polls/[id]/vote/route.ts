@@ -103,7 +103,10 @@ export async function POST(
 
       if (voteDataStr) {
         try {
-          previousVote = JSON.parse(voteDataStr as string);
+          // Upstash Redis client auto-deserializes JSON, so check if it's already an object
+          previousVote = typeof voteDataStr === 'string'
+            ? JSON.parse(voteDataStr)
+            : voteDataStr as { optionIndex?: number; optionIndices?: number[] };
         } catch (e) {
           console.error('Error parsing previous vote:', e);
           console.log('Corrupt vote data detected - treating as new voter');
