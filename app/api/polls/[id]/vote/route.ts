@@ -106,6 +106,10 @@ export async function POST(
           previousVote = JSON.parse(voteDataStr as string);
         } catch (e) {
           console.error('Error parsing previous vote:', e);
+          console.log('Corrupt vote data detected - treating as new voter');
+          // Remove corrupt data from voters set so they're treated as a new voter
+          await redis.srem(votersKey, voterId, hashedIp);
+          await redis.hdel(votersHashKey, voterId, hashedIp);
         }
       }
     }
