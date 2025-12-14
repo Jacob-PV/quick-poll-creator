@@ -2,24 +2,30 @@
 
 import { useState } from 'react';
 import { Zap, BarChart3, Share2 } from 'lucide-react';
+import Link from 'next/link';
 import CreatePollForm from '@/components/CreatePollForm';
 import ShareModal from '@/components/ShareModal';
 
 export default function Home() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [createdPollId, setCreatedPollId] = useState<string | null>(null);
+  const [pollCreated, setPollCreated] = useState(false);
+  const [formKey, setFormKey] = useState(0);
 
   const handlePollCreated = (pollId: string) => {
     setCreatedPollId(pollId);
+    setPollCreated(true);
     setShowShareModal(true);
   };
 
   const handleCloseModal = () => {
     setShowShareModal(false);
-    // Reset after animation
-    setTimeout(() => {
-      setCreatedPollId(null);
-    }, 300);
+  };
+
+  const handleNewPoll = () => {
+    setPollCreated(false);
+    setCreatedPollId(null);
+    setFormKey(prev => prev + 1);
   };
 
   return (
@@ -78,7 +84,38 @@ export default function Home() {
         </div>
 
         {/* Create Poll Form */}
-        <CreatePollForm onPollCreated={handlePollCreated} />
+        <CreatePollForm
+          key={formKey}
+          onPollCreated={handlePollCreated}
+          isLocked={pollCreated}
+          createdPollId={createdPollId}
+        />
+
+        {/* Post-Creation Buttons */}
+        {pollCreated && createdPollId && (
+          <div className="flex flex-wrap gap-4 mt-6 max-w-[680px] mx-auto">
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="bg-secondary border-4 border-text rounded-xl px-8 py-4 text-lg font-bold text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-secondary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
+            >
+              <Share2 className="w-5 h-5" />
+              Share Poll
+            </button>
+            <button
+              onClick={handleNewPoll}
+              className="bg-primary border-4 border-text rounded-xl px-8 py-4 text-lg font-bold text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-primary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
+            >
+              Create New Poll
+            </button>
+            <Link
+              href={`/poll/${createdPollId}/results`}
+              className="bg-accent border-4 border-text rounded-xl px-8 py-4 text-lg font-bold text-text shadow-brutal-lg cursor-pointer transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
+            >
+              <BarChart3 className="w-5 h-5" />
+              View Results
+            </Link>
+          </div>
+        )}
 
         {/* Share Modal */}
         {createdPollId && (

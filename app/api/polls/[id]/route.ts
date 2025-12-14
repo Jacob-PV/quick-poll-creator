@@ -36,7 +36,9 @@ export async function GET(
         : Array.isArray(pollData.votes)
           ? pollData.votes
           : [],
-      createdAt: pollData.createdAt as string
+      createdAt: pollData.createdAt as string,
+      allowMultipleChoices: pollData.allowMultipleChoices === 'true',
+      maxChoices: pollData.maxChoices ? parseInt(pollData.maxChoices as string, 10) : undefined
     };
 
     // Check if user has voted
@@ -50,6 +52,7 @@ export async function GET(
     const hashedIp = await hashIP(ip);
 
     const votersKey = `poll:${pollId}:voters`;
+    const votersHashKey = `poll:${pollId}:voter_choices`;
 
     let hasVoted = false;
     if (voterId) {
@@ -60,9 +63,34 @@ export async function GET(
       hasVoted = (await redis.sismember(votersKey, hashedIp)) === 1;
     }
 
+    // Get vote choice if user has voted
+    let votedOptionIndex: number | undefined;
+    let votedOptionIndices: number[] | undefined;
+
+    if (hasVoted) {
+      const voteDataStr = voterId
+        ? await redis.hget(votersHashKey, voterId)
+        : await redis.hget(votersHashKey, hashedIp);
+
+      if (voteDataStr) {
+        try {
+          const voteData = JSON.parse(voteDataStr as string);
+          if (voteData.optionIndices) {
+            votedOptionIndices = voteData.optionIndices;
+          } else if (voteData.optionIndex !== undefined) {
+            votedOptionIndex = voteData.optionIndex;
+          }
+        } catch (e) {
+          console.error('Error parsing vote data:', e);
+        }
+      }
+    }
+
     const response: GetPollResponse = {
       poll,
-      hasVoted
+      hasVoted,
+      votedOptionIndex,
+      votedOptionIndices
     };
 
     return NextResponse.json(response);

@@ -13,10 +13,11 @@ export async function POST(
   try {
     const pollId = params.id;
     const body: VoteRequest = await request.json();
-    const { optionIndex } = body;
+    const { optionIndex, optionIndices } = body;
 
     const pollKey = `poll:${pollId}`;
     const votersKey = `poll:${pollId}:voters`;
+    const votersHashKey = `poll:${pollId}:voter_choices`;
 
     // Fetch poll data
     const pollData = await redis.hgetall(pollKey);
@@ -42,14 +43,30 @@ export async function POST(
         : Array.isArray(pollData.votes)
           ? pollData.votes
           : [],
-      createdAt: pollData.createdAt as string
+      createdAt: pollData.createdAt as string,
+      allowMultipleChoices: pollData.allowMultipleChoices === 'true',
+      maxChoices: pollData.maxChoices ? parseInt(pollData.maxChoices as string, 10) : undefined
     };
 
-    // Validate option index
-    const indexValidation = validateOptionIndex(optionIndex, poll.options.length);
-    if (!indexValidation.isValid) {
+    // Determine if this is a multiple choice vote
+    const isMultipleChoice = poll.allowMultipleChoices && optionIndices && optionIndices.length > 0;
+    const indices = isMultipleChoice ? optionIndices! : [optionIndex!];
+
+    // Validate option indices
+    for (const idx of indices) {
+      const indexValidation = validateOptionIndex(idx, poll.options.length);
+      if (!indexValidation.isValid) {
+        return NextResponse.json(
+          { error: indexValidation.error, code: 'INVALID_OPTION' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate max choices for multiple choice polls
+    if (isMultipleChoice && poll.maxChoices && indices.length > poll.maxChoices) {
       return NextResponse.json(
-        { error: indexValidation.error, code: 'INVALID_OPTION' },
+        { error: `You can select a maximum of ${poll.maxChoices} options`, code: 'TOO_MANY_OPTIONS' },
         { status: 400 }
       );
     }
@@ -71,27 +88,70 @@ export async function POST(
     // Check if user has already voted
     const hasVotedWithCookie = (await redis.sismember(votersKey, voterId)) === 1;
     const hasVotedWithIp = (await redis.sismember(votersKey, hashedIp)) === 1;
+    const hasVoted = hasVotedWithCookie || hasVotedWithIp;
 
-    if (hasVotedWithCookie || hasVotedWithIp) {
-      return NextResponse.json(
-        { error: 'You have already voted on this poll', code: 'ALREADY_VOTED' },
-        { status: 403 }
-      );
+    // Get previous vote if exists
+    let previousVote: { optionIndex?: number; optionIndices?: number[] } | null = null;
+    if (hasVoted) {
+      const voteDataStr = voterId
+        ? await redis.hget(votersHashKey, voterId)
+        : await redis.hget(votersHashKey, hashedIp);
+
+      if (voteDataStr) {
+        try {
+          previousVote = JSON.parse(voteDataStr as string);
+        } catch (e) {
+          console.error('Error parsing previous vote:', e);
+        }
+      }
     }
 
-    // Increment vote count
-    poll.votes[optionIndex] += 1;
+    // If user has voted before, decrement previous vote(s)
+    if (previousVote) {
+      if (previousVote.optionIndices) {
+        // Decrement all previously selected options
+        for (const idx of previousVote.optionIndices) {
+          if (poll.votes[idx] > 0) {
+            poll.votes[idx] -= 1;
+          }
+        }
+      } else if (previousVote.optionIndex !== undefined) {
+        // Decrement single previous option
+        if (poll.votes[previousVote.optionIndex] > 0) {
+          poll.votes[previousVote.optionIndex] -= 1;
+        }
+      }
+    }
+
+    // Increment new vote count(s)
+    for (const idx of indices) {
+      poll.votes[idx] += 1;
+    }
 
     // Update poll in Redis
     await redis.hset(pollKey, {
       votes: JSON.stringify(poll.votes)
     });
 
-    // Add voter to voters set
+    // Store vote choice with voter data
+    const voteData = {
+      voterId,
+      timestamp: new Date().toISOString(),
+      ...(isMultipleChoice ? { optionIndices: indices } : { optionIndex: indices[0] })
+    };
+
+    // Store vote choice for both voterId and hashedIp
+    await redis.hset(votersHashKey, {
+      [voterId]: JSON.stringify(voteData),
+      [hashedIp]: JSON.stringify(voteData)
+    });
+
+    // Add voter to voters set (if not already there)
     await redis.sadd(votersKey, voterId, hashedIp);
 
-    // Set expiration on voters set (30 days)
+    // Set expiration on voters set and voter choices hash (30 days)
     await redis.expire(votersKey, 2592000);
+    await redis.expire(votersHashKey, 2592000);
 
     // Calculate total votes
     const totalVotes = poll.votes.reduce((sum, count) => sum + count, 0);

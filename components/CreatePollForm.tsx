@@ -1,16 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, CheckCircle } from 'lucide-react';
 import { validatePollQuestion, validatePollOptions } from '@/lib/validators';
+import { cn } from '@/lib/utils';
 
 interface CreatePollFormProps {
   onPollCreated: (pollId: string) => void;
+  isLocked?: boolean;
+  createdPollId?: string | null;
 }
 
-export default function CreatePollForm({ onPollCreated }: CreatePollFormProps) {
+export default function CreatePollForm({ onPollCreated, isLocked = false, createdPollId = null }: CreatePollFormProps) {
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '']);
+  const [allowMultipleChoices, setAllowMultipleChoices] = useState(false);
+  const [maxChoices, setMaxChoices] = useState(2);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,7 +72,9 @@ export default function CreatePollForm({ onPollCreated }: CreatePollFormProps) {
         },
         body: JSON.stringify({
           question: question.trim(),
-          options: filledOptions.map(opt => opt.trim())
+          options: filledOptions.map(opt => opt.trim()),
+          allowMultipleChoices,
+          maxChoices: allowMultipleChoices ? maxChoices : undefined
         })
       });
 
@@ -93,9 +100,25 @@ export default function CreatePollForm({ onPollCreated }: CreatePollFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white border-4 border-text rounded-2xl shadow-brutal-xl p-10 max-w-[680px] mx-auto"
+      className={cn(
+        "bg-white border-4 border-text rounded-2xl shadow-brutal-xl p-10 max-w-[680px] mx-auto",
+        isLocked && "bg-gray-50"
+      )}
     >
-      <h2 className="text-2xl font-bold font-heading text-text mb-6">Create Your Poll</h2>
+      {/* Success Banner */}
+      {isLocked && (
+        <div className="bg-success border-3 border-text rounded-xl px-6 py-4 mb-6 flex items-center gap-3">
+          <CheckCircle className="w-6 h-6 text-text flex-shrink-0" />
+          <div>
+            <p className="text-lg font-bold text-text">Poll Created Successfully!</p>
+            <p className="text-sm text-text-muted">Your poll is ready to be shared.</p>
+          </div>
+        </div>
+      )}
+
+      <h2 className="text-2xl font-bold font-heading text-text mb-6">
+        {isLocked ? 'Your Poll' : 'Create Your Poll'}
+      </h2>
 
       {/* Question Input */}
       <div className="mb-6">
@@ -109,7 +132,11 @@ export default function CreatePollForm({ onPollCreated }: CreatePollFormProps) {
           placeholder="What would you like to ask?"
           maxLength={200}
           rows={3}
-          className="w-full bg-background border-3 border-text rounded-xl p-5 text-2xl font-semibold font-heading text-text resize-vertical transition-all focus:border-primary focus:shadow-[0_0_0_4px_rgba(255,107,53,0.15)] focus:outline-none placeholder:text-text-muted"
+          readOnly={isLocked}
+          className={cn(
+            "w-full bg-background border-3 border-text rounded-xl p-5 text-2xl font-semibold font-heading text-text resize-vertical transition-all focus:border-primary focus:shadow-[0_0_0_4px_rgba(255,107,53,0.15)] focus:outline-none placeholder:text-text-muted",
+            isLocked && "bg-gray-100 cursor-not-allowed"
+          )}
         />
         <div className="text-sm font-medium text-text-muted text-right mt-2">
           {question.length}/200 characters
@@ -130,9 +157,13 @@ export default function CreatePollForm({ onPollCreated }: CreatePollFormProps) {
                 onChange={(e) => handleOptionChange(index, e.target.value)}
                 placeholder={`Option ${index + 1}`}
                 maxLength={100}
-                className="flex-1 bg-white border-3 border-text rounded-lg px-5 py-4 text-lg font-medium text-text transition-all focus:border-secondary focus:shadow-[0_0_0_3px_rgba(0,78,137,0.15)] focus:outline-none placeholder:text-text-muted"
+                readOnly={isLocked}
+                className={cn(
+                  "flex-1 bg-white border-3 border-text rounded-lg px-5 py-4 text-lg font-medium text-text transition-all focus:border-secondary focus:shadow-[0_0_0_3px_rgba(0,78,137,0.15)] focus:outline-none placeholder:text-text-muted",
+                  isLocked && "bg-gray-100 cursor-not-allowed"
+                )}
               />
-              {options.length > 2 && (
+              {options.length > 2 && !isLocked && (
                 <button
                   type="button"
                   onClick={() => removeOption(index)}
@@ -148,7 +179,7 @@ export default function CreatePollForm({ onPollCreated }: CreatePollFormProps) {
       </div>
 
       {/* Add Option Button */}
-      {options.length < 10 && (
+      {options.length < 10 && !isLocked && (
         <button
           type="button"
           onClick={addOption}
@@ -159,6 +190,39 @@ export default function CreatePollForm({ onPollCreated }: CreatePollFormProps) {
         </button>
       )}
 
+      {/* Multiple Choice Options */}
+      {!isLocked && (
+        <div className="mb-6 p-4 bg-background border-3 border-text rounded-xl">
+          <label className="flex items-center gap-3 mb-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={allowMultipleChoices}
+              onChange={(e) => setAllowMultipleChoices(e.target.checked)}
+              className="w-5 h-5 border-2 border-text rounded cursor-pointer"
+            />
+            <span className="text-base font-semibold text-text">Allow multiple choices</span>
+          </label>
+
+          {allowMultipleChoices && (
+            <div className="mt-3">
+              <label htmlFor="maxChoices" className="block text-sm font-semibold text-text mb-2">
+                Maximum choices allowed
+              </label>
+              <select
+                id="maxChoices"
+                value={maxChoices}
+                onChange={(e) => setMaxChoices(Number(e.target.value))}
+                className="bg-white border-3 border-text rounded-lg px-4 py-2 text-base font-medium text-text cursor-pointer"
+              >
+                {Array.from({ length: Math.min(options.filter(o => o.trim()).length, 10) - 1 }, (_, i) => i + 2).map(num => (
+                  <option key={num} value={num}>{num}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Error Message */}
       {error && (
         <div className="bg-red-50 border-3 border-error rounded-lg px-4 py-3 text-sm font-semibold text-text mb-6">
@@ -167,13 +231,15 @@ export default function CreatePollForm({ onPollCreated }: CreatePollFormProps) {
       )}
 
       {/* Create Button */}
-      <button
-        type="submit"
-        disabled={!isFormValid() || isCreating}
-        className="w-full bg-primary border-4 border-text rounded-xl px-12 py-5 text-xl font-bold font-heading text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-primary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] active:translate-x-0 active:translate-y-0 active:shadow-brutal-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-      >
-        {isCreating ? 'Creating Poll...' : 'Create Poll'}
-      </button>
+      {!isLocked && (
+        <button
+          type="submit"
+          disabled={!isFormValid() || isCreating}
+          className="w-full bg-primary border-4 border-text rounded-xl px-12 py-5 text-xl font-bold font-heading text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-primary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] active:translate-x-0 active:translate-y-0 active:shadow-brutal-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        >
+          {isCreating ? 'Creating Poll...' : 'Create Poll'}
+        </button>
+      )}
     </form>
   );
 }

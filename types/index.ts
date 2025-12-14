@@ -5,6 +5,8 @@ export interface Poll {
   options: string[];
   votes: number[];
   createdAt: string;
+  allowMultipleChoices?: boolean;
+  maxChoices?: number;
 }
 
 export interface PollResult {
@@ -17,6 +19,8 @@ export interface PollResult {
 export interface CreatePollRequest {
   question: string;
   options: string[];
+  allowMultipleChoices?: boolean;
+  maxChoices?: number;
 }
 
 export interface CreatePollResponse {
@@ -25,7 +29,8 @@ export interface CreatePollResponse {
 }
 
 export interface VoteRequest {
-  optionIndex: number;
+  optionIndex?: number;
+  optionIndices?: number[];
 }
 
 export interface VoteResponse {
@@ -42,6 +47,8 @@ export interface ApiError {
 export interface GetPollResponse {
   poll: Poll;
   hasVoted: boolean;
+  votedOptionIndex?: number;
+  votedOptionIndices?: number[];
 }
 
 export interface GetResultsResponse {

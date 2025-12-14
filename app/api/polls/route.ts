@@ -8,7 +8,7 @@ import type { CreatePollRequest, CreatePollResponse, Poll } from '@/types';
 export async function POST(request: NextRequest) {
   try {
     const body: CreatePollRequest = await request.json();
-    const { question, options } = body;
+    const { question, options, allowMultipleChoices, maxChoices } = body;
 
     // Validate question
     const questionValidation = validatePollQuestion(question);
@@ -37,7 +37,9 @@ export async function POST(request: NextRequest) {
       question: question.trim(),
       options: options.map(opt => opt.trim()),
       votes: new Array(options.length).fill(0),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      allowMultipleChoices: allowMultipleChoices || false,
+      maxChoices: allowMultipleChoices ? maxChoices : undefined
     };
 
     // Store in Redis with 30 day TTL
@@ -47,7 +49,9 @@ export async function POST(request: NextRequest) {
       question: String(poll.question),
       options: JSON.stringify(poll.options),
       votes: JSON.stringify(poll.votes),
-      createdAt: String(poll.createdAt)
+      createdAt: String(poll.createdAt),
+      allowMultipleChoices: String(poll.allowMultipleChoices || false),
+      maxChoices: poll.maxChoices ? String(poll.maxChoices) : ''
     });
 
     // Set expiration (30 days in seconds)

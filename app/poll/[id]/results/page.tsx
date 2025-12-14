@@ -121,7 +121,7 @@ export default function ResultsPage() {
         <div className="flex flex-wrap gap-4 mt-8">
           <button
             onClick={() => setShowShareModal(true)}
-            className="bg-white border-3 border-text rounded-lg px-7 py-3.5 text-base font-bold text-text shadow-brutal-md cursor-pointer transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0px_rgba(10,10,10,1)] flex items-center gap-2"
+            className="bg-white border-3 border-text rounded-lg px-7 py-3.5 text-base font-bold text-text shadow-brutal-md cursor-pointer transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
           >
             <Share2 className="w-5 h-5" />
             Share Poll

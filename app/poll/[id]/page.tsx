@@ -17,6 +17,7 @@ export default function PollPage() {
   const [poll, setPoll] = useState<Poll | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
   const [votedOption, setVotedOption] = useState<number | null>(null);
+  const [votedOptions, setVotedOptions] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,10 +37,11 @@ export default function PollPage() {
       setPoll(data.poll);
       setHasVoted(data.hasVoted);
 
-      // If user has voted, find which option they voted for
-      if (data.hasVoted && data.poll) {
-        // We don't have this info from the API, so we'll just track locally
-        // The hasVoted flag is sufficient for the UI
+      // Set voted option(s) from API response
+      if (data.votedOptionIndices) {
+        setVotedOptions(data.votedOptionIndices);
+      } else if (data.votedOptionIndex !== undefined) {
+        setVotedOption(data.votedOptionIndex);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch poll');
@@ -90,7 +92,7 @@ export default function PollPage() {
           Back to Home
         </Link>
 
-        <PollQuestion poll={poll} hasVoted={hasVoted} votedOption={votedOption} />
+        <PollQuestion poll={poll} hasVoted={hasVoted} votedOption={votedOption} votedOptions={votedOptions} />
       </div>
     </main>
   );
