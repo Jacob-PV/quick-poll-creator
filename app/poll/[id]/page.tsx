@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -21,7 +21,7 @@ export default function PollPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPoll = async () => {
+  const fetchPoll = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -48,13 +48,13 @@ export default function PollPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [pollId]);
 
   useEffect(() => {
     if (pollId) {
       fetchPoll();
     }
-  }, [pollId]);
+  }, [pollId, fetchPoll]);
 
   if (isLoading) {
     return (

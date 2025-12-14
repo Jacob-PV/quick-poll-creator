@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Share2, Home } from 'lucide-react';
 import Link from 'next/link';
@@ -24,7 +24,7 @@ export default function ResultsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
 
-  const fetchResults = async () => {
+  const fetchResults = useCallback(async () => {
     try {
       setError(null);
 
@@ -44,7 +44,7 @@ export default function ResultsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [pollId]);
 
   useEffect(() => {
     if (pollId) {
@@ -55,7 +55,7 @@ export default function ResultsPage() {
 
       return () => clearInterval(interval);
     }
-  }, [pollId]);
+  }, [pollId, fetchResults]);
 
   if (isLoading) {
     return (
