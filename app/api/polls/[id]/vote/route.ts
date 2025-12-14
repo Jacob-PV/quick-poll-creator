@@ -109,7 +109,6 @@ export async function POST(
             : voteDataStr as { optionIndex?: number; optionIndices?: number[] };
         } catch (e) {
           console.error('Error parsing previous vote:', e);
-          console.log('Corrupt vote data detected - treating as new voter');
           // Remove corrupt data from voters set so they're treated as a new voter
           await redis.srem(votersKey, voterId, hashedIp);
           await redis.del(`${votersHashKey}:${voterId}`, `${votersHashKey}:${hashedIp}`);
@@ -119,15 +118,6 @@ export async function POST(
 
     // If user has voted before, decrement previous vote(s)
     if (previousVote) {
-      console.log('Vote change detected:', {
-        pollId,
-        voterId,
-        hashedIp,
-        previousVote,
-        newVote: isMultipleChoice ? optionIndices : optionIndex,
-        votesBefore: JSON.stringify(poll.votes)
-      });
-
       if (previousVote.optionIndices) {
         // Decrement all previously selected options
         for (const idx of previousVote.optionIndices) {
@@ -141,8 +131,6 @@ export async function POST(
           poll.votes[previousVote.optionIndex] -= 1;
         }
       }
-
-      console.log('Votes after decrement:', JSON.stringify(poll.votes));
     }
 
     // Increment new vote count(s)
@@ -150,14 +138,10 @@ export async function POST(
       poll.votes[idx] += 1;
     }
 
-    console.log('Votes after increment:', JSON.stringify(poll.votes));
-
     // Update poll in Redis
     await redis.hset(pollKey, {
       votes: JSON.stringify(poll.votes)
     });
-
-    console.log('Votes saved to Redis for poll', pollId);
 
     // Store vote choice with voter data
     const voteData = {
@@ -168,18 +152,9 @@ export async function POST(
     // Store vote choice for both voterId and hashedIp
     const voteDataString = JSON.stringify(voteData);
 
-    console.log('Storing vote data:', { voterId, hashedIp, voteDataString });
-
     // Use SETEX to set value with expiration (30 days = 2592000 seconds)
     await redis.setex(`${votersHashKey}:${voterId}`, 2592000, voteDataString);
     await redis.setex(`${votersHashKey}:${hashedIp}`, 2592000, voteDataString);
-
-    console.log('Vote data stored successfully');
-
-    // Verify what was actually stored
-    const verifyVoter = await redis.get(`${votersHashKey}:${voterId}`);
-    const verifyIp = await redis.get(`${votersHashKey}:${hashedIp}`);
-    console.log('Verification - Retrieved data:', { verifyVoter, verifyIp });
 
     // Add voter to voters set (if not already there)
     await redis.sadd(votersKey, voterId, hashedIp);
