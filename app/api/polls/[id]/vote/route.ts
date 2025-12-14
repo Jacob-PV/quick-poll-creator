@@ -167,11 +167,16 @@ export async function POST(
 
     console.log('Storing vote data:', { voterId, hashedIp, voteDataString });
 
-    // Use SET with composite keys instead of HSET to avoid serialization issues
-    await redis.set(`${votersHashKey}:${voterId}`, voteDataString, { ex: 2592000 }); // 30 days
-    await redis.set(`${votersHashKey}:${hashedIp}`, voteDataString, { ex: 2592000 });
+    // Use SETEX to set value with expiration (30 days = 2592000 seconds)
+    await redis.setex(`${votersHashKey}:${voterId}`, 2592000, voteDataString);
+    await redis.setex(`${votersHashKey}:${hashedIp}`, 2592000, voteDataString);
 
     console.log('Vote data stored successfully');
+
+    // Verify what was actually stored
+    const verifyVoter = await redis.get(`${votersHashKey}:${voterId}`);
+    const verifyIp = await redis.get(`${votersHashKey}:${hashedIp}`);
+    console.log('Verification - Retrieved data:', { verifyVoter, verifyIp });
 
     // Add voter to voters set (if not already there)
     await redis.sadd(votersKey, voterId, hashedIp);
