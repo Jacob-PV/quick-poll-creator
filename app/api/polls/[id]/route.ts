@@ -37,7 +37,7 @@ export async function GET(
           ? pollData.votes
           : [],
       createdAt: pollData.createdAt as string,
-      allowMultipleChoices: pollData.allowMultipleChoices === 'true',
+      allowMultipleChoices: pollData.allowMultipleChoices === 'true' || pollData.allowMultipleChoices === true,
       maxChoices: pollData.maxChoices ? parseInt(pollData.maxChoices as string, 10) : undefined
     };
 

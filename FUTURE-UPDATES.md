@@ -1,22 +1,27 @@
-# Future Updates for Bible Reading Plan
+# Future Updates for Quick Poll Creator
 
-This file tracks requested updates, bug fixes, and improvements for the Bible Reading Plan app.
+This file tracks requested updates, bug fixes, and improvements for the Quick Poll Creator app.
 
 ## Bugs to Fix
+
+- [ ] if a user changes their vote, it isn't removing the old vote from the results, but it should.
+- [ ] it is not giving the ability to select multuple answers in the polling screen even if it was allowed by the poll
 
 ---
 
 ## Improvements & New Features
 
-- [ ] After a poll has been creted and the user exits the share screen, the "creating poll..." button should be replaced with 2 buttons, one that takes you back to the share popup, and one that lets you start a new poll. The user should no longer be able to edit the existing poll at this time. This means the "add options" button should be removed, there should be no "x"es next to the poll options, and you should not be able to edit the text boxes with the question and anwers
-- [ ] the share poll button on the results page should have a black border around it just like the "Back to poll" button does
-- [ ] all of the poll option buttons on the page where the poll is conducted should have a black border around them
-- [ ] the user should be able to change their answer if they go back to the poll
-- [ ] add the ability for multiple choice answers
+- [ ] move the 3 boxes "Lightning Fast", "Real-time Results", and "Easy Sharing" below the "Create My Poll" box
 
 ---
 
 ## General Notes
+
+*Any general observations or ideas for future consideration*
+
+Example:
+- Consider adding...
+- Explore possibility of...
 
 ---
 

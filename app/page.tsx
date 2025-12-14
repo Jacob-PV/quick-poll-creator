@@ -41,6 +41,40 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Create Poll Form */}
+        <CreatePollForm
+          key={formKey}
+          onPollCreated={handlePollCreated}
+          isLocked={pollCreated}
+          createdPollId={createdPollId}
+        />
+
+        {/* Post-Creation Buttons */}
+        {pollCreated && createdPollId && (
+          <div className="flex flex-wrap gap-4 mt-6 max-w-[680px] mx-auto">
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="bg-secondary border-4 border-text rounded-xl px-8 py-4 text-lg font-bold text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-secondary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
+            >
+              <Share2 className="w-5 h-5" />
+              Share Poll
+            </button>
+            <button
+              onClick={handleNewPoll}
+              className="bg-primary border-4 border-text rounded-xl px-8 py-4 text-lg font-bold text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-primary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
+            >
+              Create New Poll
+            </button>
+            <Link
+              href={`/poll/${createdPollId}/results`}
+              className="bg-accent border-4 border-text rounded-xl px-8 py-4 text-lg font-bold text-text shadow-brutal-lg cursor-pointer transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
+            >
+              <BarChart3 className="w-5 h-5" />
+              View Results
+            </Link>
+          </div>
+        )}
+
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Feature 1 */}
@@ -82,40 +116,6 @@ export default function Home() {
             </p>
           </div>
         </div>
-
-        {/* Create Poll Form */}
-        <CreatePollForm
-          key={formKey}
-          onPollCreated={handlePollCreated}
-          isLocked={pollCreated}
-          createdPollId={createdPollId}
-        />
-
-        {/* Post-Creation Buttons */}
-        {pollCreated && createdPollId && (
-          <div className="flex flex-wrap gap-4 mt-6 max-w-[680px] mx-auto">
-            <button
-              onClick={() => setShowShareModal(true)}
-              className="bg-secondary border-4 border-text rounded-xl px-8 py-4 text-lg font-bold text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-secondary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
-            >
-              <Share2 className="w-5 h-5" />
-              Share Poll
-            </button>
-            <button
-              onClick={handleNewPoll}
-              className="bg-primary border-4 border-text rounded-xl px-8 py-4 text-lg font-bold text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-primary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
-            >
-              Create New Poll
-            </button>
-            <Link
-              href={`/poll/${createdPollId}/results`}
-              className="bg-accent border-4 border-text rounded-xl px-8 py-4 text-lg font-bold text-text shadow-brutal-lg cursor-pointer transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
-            >
-              <BarChart3 className="w-5 h-5" />
-              View Results
-            </Link>
-          </div>
-        )}
 
         {/* Share Modal */}
         {createdPollId && (

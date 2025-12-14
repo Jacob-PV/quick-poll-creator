@@ -44,7 +44,7 @@ export async function POST(
           ? pollData.votes
           : [],
       createdAt: pollData.createdAt as string,
-      allowMultipleChoices: pollData.allowMultipleChoices === 'true',
+      allowMultipleChoices: pollData.allowMultipleChoices === 'true' || pollData.allowMultipleChoices === true,
       maxChoices: pollData.maxChoices ? parseInt(pollData.maxChoices as string, 10) : undefined
     };
 
@@ -90,12 +90,16 @@ export async function POST(
     const hasVotedWithIp = (await redis.sismember(votersKey, hashedIp)) === 1;
     const hasVoted = hasVotedWithCookie || hasVotedWithIp;
 
-    // Get previous vote if exists
+    // Get previous vote if exists - check both voterId and hashedIp
     let previousVote: { optionIndex?: number; optionIndices?: number[] } | null = null;
     if (hasVoted) {
-      const voteDataStr = voterId
-        ? await redis.hget(votersHashKey, voterId)
-        : await redis.hget(votersHashKey, hashedIp);
+      // Try voterId first if it exists
+      let voteDataStr = voterId ? await redis.hget(votersHashKey, voterId) : null;
+
+      // If not found with voterId and we have hashedIp, try that
+      if (!voteDataStr && hashedIp) {
+        voteDataStr = await redis.hget(votersHashKey, hashedIp);
+      }
 
       if (voteDataStr) {
         try {
