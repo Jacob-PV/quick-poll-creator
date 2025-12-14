@@ -94,11 +94,11 @@ export async function POST(
     let previousVote: { optionIndex?: number; optionIndices?: number[] } | null = null;
     if (hasVoted) {
       // Try voterId first if it exists
-      let voteDataStr = voterId ? await redis.hget(votersHashKey, voterId) : null;
+      let voteDataStr = voterId ? await redis.get(`${votersHashKey}:${voterId}`) : null;
 
       // If not found with voterId and we have hashedIp, try that
       if (!voteDataStr && hashedIp) {
-        voteDataStr = await redis.hget(votersHashKey, hashedIp);
+        voteDataStr = await redis.get(`${votersHashKey}:${hashedIp}`);
       }
 
       if (voteDataStr) {
@@ -109,7 +109,7 @@ export async function POST(
           console.log('Corrupt vote data detected - treating as new voter');
           // Remove corrupt data from voters set so they're treated as a new voter
           await redis.srem(votersKey, voterId, hashedIp);
-          await redis.hdel(votersHashKey, voterId, hashedIp);
+          await redis.del(`${votersHashKey}:${voterId}`, `${votersHashKey}:${hashedIp}`);
         }
       }
     }
@@ -165,17 +165,13 @@ export async function POST(
     // Store vote choice for both voterId and hashedIp
     const voteDataString = JSON.stringify(voteData);
 
-    // Build objects explicitly to avoid computed property issues
-    const voterField: Record<string, string> = {};
-    voterField[voterId] = voteDataString;
+    console.log('Storing vote data:', { voterId, hashedIp, voteDataString });
 
-    const ipField: Record<string, string> = {};
-    ipField[hashedIp] = voteDataString;
+    // Use SET with composite keys instead of HSET to avoid serialization issues
+    await redis.set(`${votersHashKey}:${voterId}`, voteDataString, { ex: 2592000 }); // 30 days
+    await redis.set(`${votersHashKey}:${hashedIp}`, voteDataString, { ex: 2592000 });
 
-    console.log('Storing vote data:', { voterId, hashedIp, voteDataString, voterField, ipField });
-
-    await redis.hset(votersHashKey, voterField);
-    await redis.hset(votersHashKey, ipField);
+    console.log('Vote data stored successfully');
 
     // Add voter to voters set (if not already there)
     await redis.sadd(votersKey, voterId, hashedIp);
