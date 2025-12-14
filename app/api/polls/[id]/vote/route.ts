@@ -159,10 +159,9 @@ export async function POST(
     };
 
     // Store vote choice for both voterId and hashedIp
-    await redis.hset(votersHashKey, {
-      [voterId]: JSON.stringify(voteData),
-      [hashedIp]: JSON.stringify(voteData)
-    });
+    const voteDataString = JSON.stringify(voteData);
+    await redis.hset(votersHashKey, { [voterId]: voteDataString });
+    await redis.hset(votersHashKey, { [hashedIp]: voteDataString });
 
     // Add voter to voters set (if not already there)
     await redis.sadd(votersKey, voterId, hashedIp);
