@@ -164,8 +164,18 @@ export async function POST(
 
     // Store vote choice for both voterId and hashedIp
     const voteDataString = JSON.stringify(voteData);
-    await redis.hset(votersHashKey, { [voterId]: voteDataString });
-    await redis.hset(votersHashKey, { [hashedIp]: voteDataString });
+
+    // Build objects explicitly to avoid computed property issues
+    const voterField: Record<string, string> = {};
+    voterField[voterId] = voteDataString;
+
+    const ipField: Record<string, string> = {};
+    ipField[hashedIp] = voteDataString;
+
+    console.log('Storing vote data:', { voterId, hashedIp, voteDataString, voterField, ipField });
+
+    await redis.hset(votersHashKey, voterField);
+    await redis.hset(votersHashKey, ipField);
 
     // Add voter to voters set (if not already there)
     await redis.sadd(votersKey, voterId, hashedIp);
