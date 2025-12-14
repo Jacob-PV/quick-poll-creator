@@ -112,8 +112,14 @@ export async function POST(
 
     // If user has voted before, decrement previous vote(s)
     if (previousVote) {
-      // Optional: Log vote change for debugging
-      // console.log('Vote change detected:', { voterId, previousVote, newVote: isMultipleChoice ? optionIndices : optionIndex });
+      console.log('Vote change detected:', {
+        pollId,
+        voterId,
+        hashedIp,
+        previousVote,
+        newVote: isMultipleChoice ? optionIndices : optionIndex,
+        votesBefore: JSON.stringify(poll.votes)
+      });
 
       if (previousVote.optionIndices) {
         // Decrement all previously selected options
@@ -128,6 +134,8 @@ export async function POST(
           poll.votes[previousVote.optionIndex] -= 1;
         }
       }
+
+      console.log('Votes after decrement:', JSON.stringify(poll.votes));
     }
 
     // Increment new vote count(s)
@@ -135,10 +143,14 @@ export async function POST(
       poll.votes[idx] += 1;
     }
 
+    console.log('Votes after increment:', JSON.stringify(poll.votes));
+
     // Update poll in Redis
     await redis.hset(pollKey, {
       votes: JSON.stringify(poll.votes)
     });
+
+    console.log('Votes saved to Redis for poll', pollId);
 
     // Store vote choice with voter data
     const voteData = {
