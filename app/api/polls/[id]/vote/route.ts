@@ -112,6 +112,9 @@ export async function POST(
 
     // If user has voted before, decrement previous vote(s)
     if (previousVote) {
+      // Optional: Log vote change for debugging
+      // console.log('Vote change detected:', { voterId, previousVote, newVote: isMultipleChoice ? optionIndices : optionIndex });
+
       if (previousVote.optionIndices) {
         // Decrement all previously selected options
         for (const idx of previousVote.optionIndices) {
@@ -139,7 +142,6 @@ export async function POST(
 
     // Store vote choice with voter data
     const voteData = {
-      voterId,
       timestamp: new Date().toISOString(),
       ...(isMultipleChoice ? { optionIndices: indices } : { optionIndex: indices[0] })
     };

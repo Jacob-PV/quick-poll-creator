@@ -76,7 +76,7 @@ export default function Home() {
         )}
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 mb-12">
           {/* Feature 1 */}
           <div className="bg-white border-4 border-text rounded-2xl p-8 shadow-brutal-lg text-center transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)]">
             <div className="w-16 h-16 bg-accent border-3 border-text rounded-xl flex items-center justify-center mx-auto mb-6">
@@ -125,6 +125,15 @@ export default function Home() {
             onClose={handleCloseModal}
           />
         )}
+
+        {/* Footer */}
+        <footer className="mt-16 pt-8 border-t-4 border-text text-center">
+          <p className="text-sm font-medium text-text-muted">
+            <Link href="/privacy" className="hover:text-text transition-colors underline">
+              Privacy Policy
+            </Link>
+          </p>
+        </footer>
       </div>
     </main>
   );

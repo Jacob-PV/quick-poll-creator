@@ -4,16 +4,16 @@ This file tracks requested updates, bug fixes, and improvements for the Quick Po
 
 ## Bugs to Fix
 
-- [ ] if a user changes their vote, it isn't removing the old vote from the results, but it should.
-- [ ] it is not giving the ability to select multuple answers in the polling screen even if it was allowed by the poll
+- [ ] Optimize the layout on the home page. There should be padding in between the "Create Your Poll" box and the boxes below it. The padding should be equal to the padding between the "Create your poll" box and the title box above it. Make sure all the spacing on this page is optimal
+- [ ] when the user goes back to the poll and changes their vote, it is not getting rid of their old vote on the results page
 
 ---
 
 ## Improvements & New Features
 
-- [ ] move the 3 boxes "Lightning Fast", "Real-time Results", and "Easy Sharing" below the "Create My Poll" box
-
----
+- [ ] Generate a privay policy and link it at the bottom of the home page
+- [ ] make the checkbox on the "Allow Multiple Choices" button match the asthetic of the other buttons. The text should also be vertically centered. Make the formating similar to the multiple choice selection buttons on the page where useres fill out the poll
+- [ ] the share button on the rsults page should have a black border around it
 
 ## General Notes
 

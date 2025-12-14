@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, X, CheckCircle } from 'lucide-react';
+import { Plus, X, CheckCircle, Check } from 'lucide-react';
 import { validatePollQuestion, validatePollOptions } from '@/lib/validators';
 import { cn } from '@/lib/utils';
 
@@ -194,12 +194,15 @@ export default function CreatePollForm({ onPollCreated, isLocked = false, create
       {!isLocked && (
         <div className="mb-6 p-4 bg-background border-3 border-text rounded-xl">
           <label className="flex items-center gap-3 mb-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={allowMultipleChoices}
-              onChange={(e) => setAllowMultipleChoices(e.target.checked)}
-              className="w-5 h-5 border-2 border-text rounded cursor-pointer"
-            />
+            <div
+              onClick={() => setAllowMultipleChoices(!allowMultipleChoices)}
+              className={cn(
+                "w-6 h-6 border-3 border-text rounded flex items-center justify-center transition-all cursor-pointer",
+                allowMultipleChoices ? "bg-primary" : "bg-white"
+              )}
+            >
+              {allowMultipleChoices && <Check className="w-4 h-4 text-white" />}
+            </div>
             <span className="text-base font-semibold text-text">Allow multiple choices</span>
           </label>
 
