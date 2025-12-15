@@ -73,9 +73,9 @@ export default function ShareModal({ pollId, isOpen, onClose }: ShareModalProps)
         <div className="flex gap-4 mb-6">
           <button
             onClick={() => window.open(twitterUrl, '_blank', 'width=550,height=420')}
-            className="flex-1 bg-[#1DA1F2] border-3 border-text rounded-lg px-5 py-3.5 text-sm font-bold text-white shadow-brutal-sm cursor-pointer transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md text-center"
+            className="flex-1 bg-[#000000] border-3 border-text rounded-lg px-5 py-3.5 text-sm font-bold text-white shadow-brutal-sm cursor-pointer transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md text-center"
           >
-            Share on Twitter
+            Share on X
           </button>
           <button
             onClick={() => window.open(facebookUrl, '_blank', 'width=550,height=420')}

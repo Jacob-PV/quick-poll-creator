@@ -54,14 +54,14 @@ export default function Home() {
           <div className="flex flex-wrap gap-4 mt-6 max-w-[680px] mx-auto">
             <button
               onClick={() => setShowShareModal(true)}
-              className="bg-secondary border-4 border-text rounded-xl px-8 py-4 text-lg font-bold text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-secondary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
+              className="bg-secondary border-4 border-solid border-text rounded-xl px-8 py-4 text-lg font-bold text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-secondary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
             >
               <Share2 className="w-5 h-5" />
               Share Poll
             </button>
             <button
               onClick={handleNewPoll}
-              className="bg-primary border-4 border-text rounded-xl px-8 py-4 text-lg font-bold text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-primary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
+              className="bg-primary border-4 border-solid border-text rounded-xl px-8 py-4 text-lg font-bold text-white shadow-brutal-lg cursor-pointer transition-all hover:bg-primary-hover hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0px_rgba(10,10,10,1)] inline-flex items-center gap-2"
             >
               Create New Poll
             </button>
