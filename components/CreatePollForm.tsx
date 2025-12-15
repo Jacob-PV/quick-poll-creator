@@ -19,10 +19,15 @@ export default function CreatePollForm({ onPollCreated, isLocked = false, create
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Update maxChoices to match number of available option fields
+  // Set maxChoices to current number of option fields when "Allow multiple choices" is checked
+  // We intentionally only depend on allowMultipleChoices, not options.length
+  // This ensures maxChoices is set when the checkbox is toggled, but doesn't update as options change
   useEffect(() => {
-    setMaxChoices(options.length);
-  }, [options.length]);
+    if (allowMultipleChoices) {
+      setMaxChoices(options.length);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allowMultipleChoices]);
 
   const handleQuestionChange = (value: string) => {
     setQuestion(value);
@@ -70,6 +75,11 @@ export default function CreatePollForm({ onPollCreated, isLocked = false, create
     setIsCreating(true);
 
     try {
+      // Cap maxChoices to the number of filled options to prevent invalid polls
+      const actualMaxChoices = allowMultipleChoices
+        ? Math.min(maxChoices, filledOptions.length)
+        : undefined;
+
       const response = await fetch('/api/polls', {
         method: 'POST',
         headers: {
@@ -79,7 +89,7 @@ export default function CreatePollForm({ onPollCreated, isLocked = false, create
           question: question.trim(),
           options: filledOptions.map(opt => opt.trim()),
           allowMultipleChoices,
-          maxChoices: allowMultipleChoices ? maxChoices : undefined
+          maxChoices: actualMaxChoices
         })
       });
 
@@ -222,7 +232,7 @@ export default function CreatePollForm({ onPollCreated, isLocked = false, create
                 onChange={(e) => setMaxChoices(Number(e.target.value))}
                 className="bg-white border-3 border-text rounded-lg px-4 py-2 text-base font-medium text-text cursor-pointer"
               >
-                {Array.from({ length: Math.min(options.filter(o => o.trim()).length, 10) - 1 }, (_, i) => i + 2).map(num => (
+                {Array.from({ length: Math.min(options.length, 10) - 1 }, (_, i) => i + 2).map(num => (
                   <option key={num} value={num}>{num}</option>
                 ))}
               </select>
