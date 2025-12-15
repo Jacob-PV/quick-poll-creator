@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, X, CheckCircle, Check } from 'lucide-react';
 import { validatePollQuestion, validatePollOptions } from '@/lib/validators';
 import { cn } from '@/lib/utils';
@@ -18,6 +18,11 @@ export default function CreatePollForm({ onPollCreated, isLocked = false, create
   const [maxChoices, setMaxChoices] = useState(2);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Update maxChoices to match number of available option fields
+  useEffect(() => {
+    setMaxChoices(options.length);
+  }, [options.length]);
 
   const handleQuestionChange = (value: string) => {
     setQuestion(value);
